@@ -1,0 +1,75 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{实验报告}
+\noindent{\bf1.Report name:}Lab02\\
+{\bf2.Purpose:}\\
+根据题中所给的p,q,N的值(分别位于x3100,x3101,x3102),计算F(N),并将其存储在x3103处;\\
+其中$F(N)=F(N-2)\%p+F(N-1)\%q,(2\le N\le 1024),p=2^{k} (2\le k\le 10),10\le q\le 1024$\\
+{\bf3.Principles:}\\
+1):在设计解法时,要求计算第N个,因此要以一个寄存器存储N的值,并每次循环时递减;\\
+2):对于该循环过程中对于取模的操作,可以嵌套两个循环,分别计算取模p,q后的值,在该循环中,寄存器存储F(N-1)或F(N-2)的值,
+每次减去p或q,当减至负数时跳出,再加上p或q,得到取模后值;\\
+3):对于减法操作，可以以一个新寄存器存储p或q,取反加一后进行ADD运算即可;\\
+{\bf4.Procedure:}\\
+\hspace*{1.5cm}.ORIG x3000\\
+\hspace*{1.5cm}LDI  R0, PPTR\\
+\hspace*{1.5cm}LDI  R1, QPTR\\
+\hspace*{1.5cm}LDI  R2, NPTR\\
+\hspace*{1.5cm}ADD R5, R5, \#1\\
+\hspace*{1.5cm}ADD R6, R6, \#1\\
+\hspace*{1.5cm}ADD R2, R2, \#-2\\
+\hspace*{1.5cm};赋初值,N-2便于跳出\\
+\hspace*{1.5cm}BRn STORE\\
+AGAIN   ADD R3, R5, \#0\\
+\hspace*{1.5cm}ADD R4, R6, \#0\\
+\hspace*{1.5cm}ADD R5, R4, \#0\\
+\hspace*{1.5cm};R3,R4储存F(N-1),F(N-2),R5记录便于下一个循环使用\\
+\hspace*{1.5cm}NOT R7, R0\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+SUBA  ADD R3, R3, R7\\
+\hspace*{1.5cm}BRzp SUBA\\
+\hspace*{1.5cm};对p取模\\
+\hspace*{1.5cm}NOT R7, R1\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+SUBB  ADD R4, R4, R7\\
+\hspace*{1.5cm}BRzp SUBB\\
+\hspace*{1.5cm};对q取模\\
+\hspace*{1.5cm}ADD R3, R3, R0\\
+\hspace*{1.5cm}ADD R4, R4, R1\\
+\hspace*{1.5cm};取模后的负值再加上原值\\
+\hspace*{1.5cm}ADD R6, R3, R4\\
+\hspace*{1.5cm}ADD R2, R2, \#-1\\
+\hspace*{1.5cm}BRzp AGAIN\\
+\hspace*{1.5cm};根据N值判断是否循环\\
+STORE STI R6, RESULT\\
+\hspace*{1.5cm}TRAP x25\\
+\hspace*{1.5cm};HALT\\
+\hspace*{1.5cm}PPTR    .FILL   x3100\\
+\hspace*{1.5cm}QPTR    .FILL   x3101\\
+\hspace*{1.5cm}NPTR    .FILL   x3102\\
+\hspace*{1.5cm}RESULT     .FILL   x3103\\
+\hspace*{1.5cm}.END\\
+{\bf5.Result of test:}\\
+根据自测网站，评测结果如下：\\
+\includegraphics[width = .9\textwidth]{评测.jpg}\\
+{\bf6.Idea:}\\
+由于p为2的k次方的形式，在二进制中取模对其进行位操作即可，如1010010mod10000，则比q低位处0010即为取模后余数；\\
+可根据此来对对q取模这一循环结构进行优化；
+\end{document}
+
