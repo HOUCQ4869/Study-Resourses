@@ -1,0 +1,284 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+
+
+\lstset{
+ columns=fixed,       
+ numbers=left,                                        % 在左侧显示行号
+ numberstyle=\tiny\color{gray},                       % 设定行号格式
+ frame=none,                                          % 不显示背景边框
+ backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
+ keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
+ numberstyle=\footnotesize\color{darkgray},           
+ commentstyle=\it\color[RGB]{0,96,96},                % 设置代码注释的格式
+ stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},   % 设置字符串格式
+ showstringspaces=false,                              % 不显示字符串中的空格
+ language=c,                                        % 设置语言
+}
+
+
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{模拟与数字电路实验报告}
+\noindent{\bf1.实验题目：}实验07 FPGA实验平台及IP核使用 \\
+{\bf2.实验目的：}熟悉 FPGAOL 在线实验平台结构及使用，掌握 FPGA 开发各关键环节，学会使用 IP 核（知识产权核）\\
+{\bf3.实验平台：}Vivado软件\\
+{\bf4.实验练习：}\\
+{\bf1).问题一：}对于一个16*8bit的ROM例化并初始化，接到七段数码管上显示与开关相对应的十六进制数字\\
+根据数码管对应数字二进制表示存入ROM，例化如下：\\
+\includegraphics[width = .9\textwidth]{problem1.jpg}\\
+verilog代码如下：
+\begin{lstlisting}
+  module problem1(
+    input [3:0] sw,
+    input clk,
+    output [7:0]led
+      );
+  dist_mem_gen_0 dist_mem_gen_0(
+    .a  (sw),
+    .spo(led)
+      );
+endmodule
+\end{lstlisting}
+约束文件如下：
+\begin{lstlisting}
+set_property  -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } 
+  [get_ports { clk }]; 
+
+set_property -dict {PACKAGE_PIN C17 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[0] }];
+set_property -dict {PACKAGE_PIN D18 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[1] }];
+set_property -dict {PACKAGE_PIN E18 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[2] }];
+set_property -dict {PACKAGE_PIN G17 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[3] }];
+set_property -dict {PACKAGE_PIN D17 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[4] }];
+set_property -dict {PACKAGE_PIN E17 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[5] }];
+set_property -dict {PACKAGE_PIN F18 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[6] }];
+set_property -dict {PACKAGE_PIN G18 IOSTANDARD LVCMOS33 } 
+  [get_ports { led[7] }];
+
+set_property -dict {PACKAGE_PIN D14 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[0] }];
+set_property -dict {PACKAGE_PIN F16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[1] }];
+set_property -dict {PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[2] }];
+set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[3] }];
+\end{lstlisting}
+效果如下：\\
+\includegraphics[width = .9\textwidth]{pro.jpg}\\
+{\bf2).问题二：}根据8个开关作为输入，十六进制数码管作为输出，采取对数码管扫描的方式，使得在视觉上同时显示在两个数码管上，
+由于扫描频率不能过快或者过慢，采取100hz作为扫描频率；\\
+verilog代码如下：
+\begin{lstlisting}
+  module problem2(
+    input [7:0]sw,
+    input clk,
+    output reg [2:0]AN,
+    output reg [3:0]D
+        );
+    reg [15:0] cnt;
+    always@(posedge clk)
+    begin
+        if(cnt >= 10000)
+            cnt <= 0;
+         else
+            cnt <= cnt + 1;
+    end
+    always@(posedge clk)
+    begin
+        if(cnt == 0)
+        begin
+            if(AN == 3'b000)
+                AN = 3'b001;
+            else    
+                AN = 3'b000;
+        end 
+    end
+    always@(posedge clk)
+    begin
+        if(AN == 3'b000)
+            D <= sw[3:0];
+        else 
+            D <= sw[7:4];
+    end
+    endmodule
+\end{lstlisting}
+约束文件如下：
+\begin{lstlisting}
+set_property  -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } 
+  [get_ports { clk }]; 
+
+set_property -dict {PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[0] }];
+set_property -dict {PACKAGE_PIN A13 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[1] }];
+set_property -dict {PACKAGE_PIN A16 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[2] }];
+set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[3] }];
+set_property -dict {PACKAGE_PIN B17 IOSTANDARD LVCMOS33 } 
+  [get_ports { AN[0] }];
+set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } 
+  [get_ports { AN[1] }];
+set_property -dict {PACKAGE_PIN A18 IOSTANDARD LVCMOS33 } 
+  [get_ports { AN[2] }];
+
+set_property -dict {PACKAGE_PIN D14 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[0] }];
+set_property -dict {PACKAGE_PIN F16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[1] }];
+set_property -dict {PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[2] }];
+set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[3] }];
+set_property -dict {PACKAGE_PIN E16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[4] }];
+set_property -dict {PACKAGE_PIN F13 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[5] }];
+set_property -dict {PACKAGE_PIN G13 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[6] }];
+set_property -dict {PACKAGE_PIN H16 IOSTANDARD LVCMOS33 } 
+  [get_ports { sw[7] }];
+\end{lstlisting}
+效果如下：\\
+\includegraphics[width = .9\textwidth]{problem2.jpg}\\
+{\bf3).问题三：}利用两个计数器，100hz用于对数码管扫描，10hz用于0.1s的精确度计时；\\
+verilog代码如下:
+\begin{lstlisting}
+  module problem3(
+    input rst,
+    input clk,
+    output reg [3:0] D,
+    output reg [2:0] AN
+        );
+    reg [15:0] sw;
+    reg [31:0] cnt_100;
+    reg [31:0] cnt_10;
+    
+    always@(posedge clk)
+    begin
+        if(cnt_100 >= 1000000)
+            cnt_100 <= 0;
+         else
+            cnt_100 <= cnt_100 + 1;
+    end
+    
+    always@(posedge clk)
+    begin
+        if(cnt_100 == 0)
+        begin
+            if(AN == 3'b011)
+                AN <= 3'b000;
+            else    
+                AN <= AN + 3'b001;
+        end 
+    end
+    
+    always@(posedge clk)
+    begin
+        if(cnt_10 >= 10000000)
+            cnt_10 <= 0;
+         else
+            cnt_10 <= cnt_10 + 1;
+    end
+    
+    always@(posedge clk)
+    begin 
+        if(cnt_10 == 0)
+        begin
+            if(rst == 1)
+                sw = 16'b0001001000110100;
+            else
+                sw <= sw + 16'b0000000000000001;
+            
+            if(sw[3:0] == 4'b1010)
+            begin
+                sw[7:4] <= sw[7:4] + 4'b0001;
+                sw[3:0] <= 4'b0000;
+            end
+            if(sw[7:4] == 4'b1010)
+            begin
+                sw[11:8] <= sw[11:8] + 4'b0001;
+                sw[7:4] <= 4'b0000;
+            end     
+            if(sw[11:8] == 4'b0110)
+            begin
+                sw[15:12] <= sw[15:12] + 4'b0001;               
+                sw[11:8] <= 4'b0000;               
+            end      
+            if(sw[15:12] == 4'b1010)
+            begin
+                sw[15:12] <= 4'b0000;
+            end
+        end
+    end
+    
+    always@(posedge clk)
+    begin
+            if(AN == 3'b000)
+                D <= sw[3:0];
+            else if(AN == 3'b001)
+                D <= sw[7:4];
+            else if(AN == 3'b010)
+                D <= sw[11:8];
+            else 
+                D <= sw[15:12];
+    end
+    endmodule
+\end{lstlisting}
+约束文件如下：
+\begin{lstlisting}
+set_property  -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } 
+  [get_ports { clk }];
+  
+set_property -dict {PACKAGE_PIN B18 IOSTANDARD LVCMOS33 } 
+  [get_ports { rst }];
+
+set_property -dict {PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[0] }];
+set_property -dict {PACKAGE_PIN A13 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[1] }];
+set_property -dict {PACKAGE_PIN A16 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[2] }];
+set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33 } 
+  [get_ports { D[3] }];
+set_property -dict {PACKAGE_PIN B17 IOSTANDARD LVCMOS33 } 
+  [get_ports { AN[0] }];
+set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33 }
+  [get_ports { AN[1] }];
+set_property -dict {PACKAGE_PIN A18 IOSTANDARD LVCMOS33 }
+  [get_ports { AN[2] }];
+\end{lstlisting}
+效果如下：\\
+\includegraphics[width = .9\textwidth]{problem3.jpg}\\
+以及复位时如下：\\
+\includegraphics[width = .9\textwidth]{problem3_1.jpg}\\
+{\bf5.总结与思考：}\\
+{\bf1).收获：}通过本次实验对于FPGA有了相当了解，同时对于Vivado软件的使用了有了更为深入的了解，学会FPGA开发的各环节以及IP核；\\
+{\bf2).评价：}实验内容相对而言较难，对于设计以及软件使用难度都有了较大的提升；\\
+{\bf3).建议：}实验内容设置合理，无较大建议；
+\end{document}
+
