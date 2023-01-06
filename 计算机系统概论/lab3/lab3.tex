@@ -1,0 +1,75 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{实验报告}
+\noindent{\bf1.Report name:}Lab03\\
+{\bf2.Purpose:}\\
+给定一个字符串及其长度，计算出该字符串最长的重复子字符串的长度；其中x3100存储N，即字符串长度，
+紧接着每个字符存储在从地址x3101开始的连续存储位置中;\\
+要求将结果储存到x3050中，程序从x3000开始;\\
+{\bf3.Principles:}\\
+1)首先用R1指向初始位置，R3，R4用于存储该位置的字符值以及相邻一位的值；R1每次循环不断向后移动，比较R3，R4所存储的字符值是否相等；\\
+2)取反加一对R3，R4进行减法运算，相等则跳转至计数语句COUNT，否则对记录计数的R7初始化为1，重新开始比较；\\
+3)计数语句实现对当前连续相等字符数R7的更新，同时与最大重复字符串长度R2比较，更新R2;\\
+4)R0作为循环截止条件，不管是否进入计数，都根据此时R0的值判断是否跳出循环;\\
+{\bf4.Procedure:}\\
+.ORIG x3000\\
+\hspace*{1.5cm}LDI R0, NUM\\
+\hspace*{1.5cm}LD R1, DATA\\
+\\
+\hspace*{1.5cm}ADD R2, R2, \#1\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+\hspace*{1.5cm};初始化R2, R7计数为1\\
+AGAIN   ADD R0, R0, \#-1\\
+\hspace*{1.5cm}BRz OVER\\
+\hspace*{1.5cm}LDR R3, R1, \#0\\
+\hspace*{1.5cm}LDR R4, R1, \#1\\
+\hspace*{1.5cm}ADD R1, R1, \#1\\
+\hspace*{1.5cm};得到相邻的字符，并将指针向后推移一位\\
+\hspace*{1.5cm}NOT R5, R3\\
+\hspace*{1.5cm}ADD R5, R5 \#1\\
+\hspace*{1.5cm}ADD R6, R5, R4\\
+\hspace*{1.5cm};减法计算是否相等，则跳转到COUNT\\
+\hspace*{1.5cm}BRz COUNT\\
+\hspace*{1.5cm}AND R7, R7, \#0\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+\hspace*{1.5cm};重新赋值计数\\
+\hspace*{1.5cm}BRnzp AGAIN\\
+\\
+COUNT   ADD R7, R7, \#1\\
+\hspace*{1.5cm}NOT R3, R2\\
+\hspace*{1.5cm}ADD R3, R3, \#1\\
+\hspace*{1.5cm}ADD R4, R7, R3\\
+\hspace*{1.5cm}BRnz AGAIN\\
+\hspace*{1.5cm};比较此时相等长度与最大长度R2的大小\\
+\hspace*{1.5cm}ADD R2, R7 \#0\\
+\hspace*{1.5cm}BRnzp AGAIN\\
+\\
+OVER    STI R2, RESULT\\
+\hspace*{1.5cm}HALT\\
+\\
+RESULT .FILL x3050\\
+NUM .FILL x3100\\
+DATA .FILL x3101\\
+\\
+.END\\
+{\bf5.Result of test:}\\
+根据自测网站，评测结果如下：\\
+\includegraphics[width = .9\textwidth]{评测.jpg}\\
+\end{document}
+
