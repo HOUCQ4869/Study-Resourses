@@ -1,2 +1,0 @@
-# README
-USTC学习资料记录
