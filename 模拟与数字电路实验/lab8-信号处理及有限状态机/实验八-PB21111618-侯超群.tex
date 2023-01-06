@@ -1,0 +1,249 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\lstset{
+ columns=fixed,       
+ numbers=left,                                        % 在左侧显示行号
+ numberstyle=\tiny\color{gray},                       % 设定行号格式
+ frame=none,                                          % 不显示背景边框
+ backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
+ keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
+ numberstyle=\footnotesize\color{darkgray},           
+ commentstyle=\it\color[RGB]{0,96,96},                % 设置代码注释的格式
+ stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},   % 设置字符串格式
+ showstringspaces=false,                              % 不显示字符串中的空格
+ language=c,                                        % 设置语言
+}
+
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{模拟与数字电路实验报告}
+\noindent{\bf1.实验题目：}实验08 信号处理及有限状态机 \\
+{\bf2.实验目的：}进一步熟悉 FPGA 开发的整体流程，掌握几种常见的信号处理技巧，掌握有限状态机的设计方法，能够使用有限状态机设计功能电路\\
+{\bf3.实验平台：}Vivado及Logisim软件；\\
+{\bf4.实验练习：}\\
+{\bf1).问题一：}将实验手册中的代码改成三段式有限状态机形式如下：\\
+\begin{lstlisting}
+module problem1(
+input clk,
+input rst,
+output led
+);
+parameter C_0 = 2'b00;
+parameter C_1 = 2'b01;
+parameter C_2 = 2'b10;
+parameter C_3 = 2'b11;
+reg [1:0] curr_state;
+reg [1:0] next_state;
+//第一部分
+always@(*)
+begin
+    case(curr_state)
+        C_0 : next_state = C_1;
+        C_1 : next_state = C_2;
+        C_2 : next_state = C_3;
+        C_3 : next_state = C_0;
+    endcase
+end
+//第二部分
+always@(posedge clk or posedge rst)
+begin
+    if(rst)
+        curr_state <= C_0;
+    else 
+        curr_state <= next_state;
+end
+//第三部分
+assign led = (curr_state == 2'b11) ? 1'b1 : 1'b0;
+endmodule    
+\end{lstlisting}
+{\bf2).问题二：}在logisim中设计4bit位宽的计数器电路，由于根据sw电平变化进行计数，需要对信号进行取边沿，对实验手册中的设计进行稍加修改，使其在电平翻转均能产生脉冲；
+截图如下：\\
+\includegraphics[width = .9\textwidth]{problem2.jpg}\\
+其中调用4bit寄存器模块，如下：\\
+\includegraphics[width = .9\textwidth]{problem2-.jpg}\\
+{\bf3).问题三：}设计8位十六进制计数器，主要对于开关按钮进行取边沿操作，使其产生计数，具体代码如下：\\
+\begin{lstlisting}
+module problem3(
+input clk, button, rst, sw,
+output reg [3:0]D,
+output reg [2:0]AN
+);
+//一个时钟周期
+reg button_r1, button_r2;
+wire button_edge;
+always@(posedge clk)
+    button_r1 <= button;
+always@(posedge clk)
+    button_r2 <= button_r1;
+assign button_edge = button_r1 & (~button_r2);
+//扫描
+reg [15:0]cnt;
+reg [7:0]led;
+always@(posedge clk)
+begin
+    if(cnt >= 10000)
+        cnt <= 0;
+    else 
+        cnt <= cnt + 1;
+end
+
+always@(posedge clk)
+begin
+    if(cnt == 0)
+    begin
+        if(AN == 3'b000)
+            AN = 3'b001;
+        else
+            AN = 3'b000;
+    end
+end
+
+always@(posedge clk)
+begin
+    if(AN == 3'b000)
+        D <= led[3:0];
+    else 
+        D <= led[7:4];
+end
+//计数
+always@(posedge clk)
+begin
+    if(rst == 1)
+        led = 8'b00011111;
+    if(button_edge)
+    begin
+        if(sw)
+            led = led + 8'b00000001;
+        else
+            led = led - 8'b00000001;
+    end
+end
+endmodule
+\end{lstlisting}
+复位时其在实验平台显示截图如下：\\
+\includegraphics[width = .9\textwidth]{problem1.jpg}\\
+{\bf4).问题四：}使用有限状态机设计该序列监测电路，共5个状态，可将其化简为4种。并通过对开关信号的取边沿判断有限状态机的下一步走向，最后赋给相关管脚；\\
+代码如下：\\
+\begin{lstlisting}
+  module problem4(
+    input sw, clk, button,
+    output reg [3:0]D,
+    output reg [2:0]AN
+        );
+    reg [3:0]count;
+    reg [15:0]num;
+    //一个时钟周期
+    reg button_r1, button_r2;
+    wire button_edge;
+    always@(posedge clk)
+        button_r1 <= button;
+    always@(posedge clk)
+        button_r2 <= button_r1;
+    assign button_edge = button_r1 & (~button_r2);
+    //扫描
+    reg [15:0]cnt;
+    always@(posedge clk)
+    begin
+        if(cnt >= 2500)
+            cnt <= 0;
+        else    
+            cnt <= cnt + 1;
+    end
+    always@(posedge clk)
+    begin
+        if(cnt == 0)
+        begin
+            if(AN == 3'b101)
+                AN <= 3'b000;
+            else 
+                AN <= AN + 3'b001;
+        end
+    end
+    always@(posedge clk)
+    begin
+        if(AN == 3'b000)
+            D <= num[3:0];
+        else if(AN == 3'b001)
+            D <= count;
+        else if(AN == 3'b010)
+            D <= num[3:0];
+        else if(AN == 3'b011)
+            D <= num[7:4];
+        else if(AN == 3'b100)
+            D <= num[11:8];
+        else 
+            D <= num[15:12];
+    end
+    //状态机
+    parameter C_0 = 2'b00;
+    parameter C_1 = 2'b01;
+    parameter C_11 = 2'b10;
+    parameter C_110 = 2'b11;
+    reg [1:0] curr_state;
+    reg [1:0] next_state;
+    always@(*)
+    begin
+        if(sw)
+        begin   
+            case(curr_state)
+                C_0: next_state = C_1;
+                C_1: next_state = C_11;
+                C_11: next_state = C_11;
+                C_110: next_state = C_1;
+                default: next_state = C_0;
+            endcase
+        end
+        else
+        begin
+            case(curr_state)
+                C_0: next_state = C_0;
+                C_1: next_state = C_0;
+                C_11: next_state = C_110;
+                C_110: next_state = C_0;
+                default: next_state = C_0;
+            endcase
+        end
+    end
+    
+    always@(posedge clk)
+    begin
+        if(button_edge)
+        begin
+            if(curr_state == C_110 && next_state == C_0)
+                count = count + 1;
+            curr_state <= next_state;
+            //根据状态变化
+            num[15:12] <= num[11:8];
+            num[11:8] <= num[7:4];
+            num[7:4] <= num[3:0];
+            num[3:0] <= {3'b000,sw};                
+        end
+    end
+    
+    endmodule
+\end{lstlisting}
+当输入0011001110011时其在实验平台显示截图如下：分别显示最近输入的4个数值，检测到目标序列的个数，当前输入的数值\\
+\includegraphics[width = .9\textwidth]{problem3.jpg}\\
+{\bf5.总结与思考：}\\
+{\bf1).收获：}通过本次实验对于FPGA有了相当了解，同时对于Vivado软件的使用了有了更为深入的了解，学会了信号处理以及有限状态机的使用；\\
+{\bf2).评价：}实验内容由于有前面实验的铺垫相对而言不是较难，设置合理；\\
+{\bf3).建议：}实验内容设置合理，无较大建议；
+\end{document}
+
