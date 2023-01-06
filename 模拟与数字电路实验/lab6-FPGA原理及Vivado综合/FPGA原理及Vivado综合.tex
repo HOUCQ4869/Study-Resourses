@@ -1,0 +1,42 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{模拟与数字电路实验报告}
+\noindent{\bf1.实验题目：}实验05 FPGA原理及Vivado综合 \\
+{\bf2.实验目的：}了解 FPGA 工作原理，了解 Verilog 文件和约束文件在 FPGA 开发中的作用，学会使用 Vivado 进行 FPGA 开发的完整流程\\
+{\bf3.实验平台：}Vivado及Logisim软件；\\
+{\bf4.实验练习：}\\
+{\bf1).问题一：}通过实验中给出的可编程逻辑单元，交叉互联矩阵及IOB电路图，实现题目中所给出的代码\\
+由于输入端为a，以及常量1，实现其异或关系，并运用时序逻辑电路，电路图及相应配置如下：\\
+\includegraphics[width = .9\textwidth]{problem1.jpg}\\
+{\bf2).问题二：}根据实验中所给出的XDC约束文件进行相应修改，将输入处或输出处管脚对应的前后调换即可，相应约束文件代码如下：\\
+\includegraphics[width = .9\textwidth]{problem2_code.jpg}\\
+烧写后在实验平台显示截图如下：\\
+\includegraphics[width = .9\textwidth]{problem2.jpg}\\
+{\bf3).问题三：}设计30位计数器，以及32位，其原理类似，下面以32位为例，相应代码及约束文件如下：\\
+\includegraphics[width = .9\textwidth]{problem3_32_code.jpg}\\\\
+\includegraphics[width = .9\textwidth]{problem3_32_xpc.jpg}\\
+其在实验平台显示截图如下：\\
+\includegraphics[width = .9\textwidth]{problem3.jpg}\\
+通过对比不难发现，相对而言30位计数器变化的更快，其原因在于位数较低，变化所需时间周期更短，为$10^{-8}\times  2^{22}$s；\\
+{\bf5.总结与思考：}\\
+{\bf1).收获：}通过本次实验对于FPGA有了相当了解，同时对于Vivado软件的使用了有了更为深入的了解，学会了约束文件的编写与测试；\\
+{\bf2).评价：}实验内容相对而言不是较难，设置合理；\\
+{\bf3).建议：}实验内容设置合理，无较大建议；
+\end{document}
+
