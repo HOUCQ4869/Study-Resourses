@@ -1,0 +1,95 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{模拟与数字电路实验报告}
+\noindent{\bf1.实验题目：}实验04 Verilog硬件描述语言\\
+{\bf2.实验目的：}掌握 Verilog HDL 常用语法,能够熟练阅读并理解 Verilog 代码,能够设计较复杂的数字功能电路,能够将 Verilog 代码与实际硬件相对应\\
+{\bf3.实验环境：}CPU：AMD Ryzen 5 5600H with Radeon Graphics 3.30GHz；内存:16GB；操作系统：Windows 10；软件平台：Logisim；\\
+{\bf4.实验练习：}\\
+{\bf1).problem1：}由于ifelse语句一般出现在always语句的过程语句部分，而不能在模块内部单独出现，故用always@(*)语句实现组合逻辑；
+同时always语句内部被赋值的信号应被定义为reg类型，故模块端口定义部分定义reg b；\\
+module test(\\
+input a,\\
+output reg b\\
+);\\
+always@(*)\\
+begin\\
+\hspace*{0.5cm}if(a)\\
+\hspace*{1cm}b = 1'b0;\\
+\hspace*{0.5cm}else\\
+\hspace*{1cm}b = 1'b1;\\
+end\\
+endmodule\\
+{\bf2).problem2：}由于always语句内实现对b的赋值，可知b与a有相同的位宽，且被定义为reg类型；末尾有endmodule语句结束；\\
+module test(\\
+input [4:0] a,\\
+output reg [4:0] b\\
+);\\
+always@(*)\\
+\hspace*{0.5cm}b = a;\\
+endmodule\\
+{\bf3).problem3：}各输出信号的值如下：\\
+module test(\\
+input [7:0] a, b,//a = 8'b0011\_0011,  b = 8'b1111\_0000\\
+output [7:0] c, d, e, f, g, h, i, j, k\\
+);\\
+\hspace*{0.5cm}assign c = a \& b;       //按位与8'b0011\_0000\\
+\hspace*{0.5cm}assign d = a | b;       //按位或8'b1111\_0011\\
+\hspace*{0.5cm}assign e = a $\wedge$ b;       //按位异或8'b1100\_0011\\
+\hspace*{0.5cm}assign f = $\sim$ a;          //按位取反8'b1100\_1100\\
+\hspace*{0.5cm}assign g = $\left \{  a[3:0], b[3:0]\right \}$ ;    //拼接操作符8'b0011\_0000\\
+\hspace*{0.5cm}assign h = a >> 3;              //右移8'b0000\_0110\\
+\hspace*{0.5cm}assign i = \&b;                  //归约与8'bxxxx\_ xxx0\\
+\hspace*{0.5cm}assign j = (a > b) ? a : b;     //条件操作符8'b1111\_0000\\
+\hspace*{0.5cm}assign k = a - b;               //算术运算符8'b0100\_0011\\
+endmodule\\
+{\bf4).problem4：}assign语句将逻辑表达式的值赋给wire类型信号，因此c信号的类型应为wire默认类型；
+因此在模块调用时，temp信号的类型同样应设为wire，在模块关联中应采取相同的关联方式，故如下保证一致性；\\
+module sub\_test(\\
+input a, b,\\
+output  c\\
+);\\
+\hspace*{0.5cm}assign c = (a < b) ? a : b;\\
+endmodule\\\\
+module test(\\
+input a, b, c,\\
+output o\\
+);\\
+\hspace*{0.5cm}wire temp;\\
+\hspace*{0.5cm}sub\_test test\_inst1(.a(a), .b(b), .c(temp));\\
+\hspace*{0.5cm}sub\_test test\_inst2(temp, c, o);\\
+endmodule\\
+{\bf5).problem5：}output语句应在端口的定义部分；同时由于模块化实例只需要一次，故不能出现在always语句中；\\
+module sub\_test(\\
+input a, b,\\
+output o\\
+);\\
+\hspace*{0.5cm}assign o = a + b;\\
+endmodule\\\\
+module test(\\
+input a, b,\\
+output c\\
+);\\
+\hspace*{0.5cm}sub\_test test\_inst(a, b, c);\\
+endmodule\\
+{\bf5.总结与思考：}\\
+{\bf1).收获：}本次实验对于Verilog语法有了较为基础的了解，对模块的基本组成部分基本掌握；\\
+{\bf2).评价：}实验作为Verilog语法的基本入门内容，其内容相对而言不是较难，设置合理；\\
+{\bf3).建议：}实验内容设置合理，无较大建议；
+\end{document}
+
