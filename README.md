@@ -1,1 +1,2 @@
-# USTC学习资料记录
+# README
+USTC学习资料记录
