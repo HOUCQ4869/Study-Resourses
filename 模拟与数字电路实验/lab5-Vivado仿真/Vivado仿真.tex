@@ -1,0 +1,152 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{模拟与数字电路实验报告}
+\noindent{\bf1.实验题目：}实验05 使用 Vivado 进行仿真 \\
+{\bf2.实验目的：}熟悉 Vivado 软件的下载、安装及使用，学习使用 Verilog 编写仿真文件，学习使用 Verilog 进行仿真，查看并分析波形文件；\\
+{\bf3.实验环境：}CPU：AMD Ryzen 5 5600H with Radeon Graphics 3.30GHz；内存:16GB；操作系统：Windows 10；软件平台：Logisim；\\
+{\bf4.实验练习：}\\
+{\bf1).问题一：}\\
+根据题目中波形编写Verilog仿真文件如下(默认时间单位为ns)：\\
+\`timescale 1ns / 1ps\\
+module problem1();\\
+reg a, b;\\
+initial\\
+begin\\
+\hspace*{0.5cm}a = 1;\\
+\hspace*{0.5cm}\#200 a = 0;\\
+\hspace*{0.5cm}\#200 \$stop;\\
+end\\
+initial\\
+begin\\
+\hspace*{0.5cm}b = 0;\\
+\hspace*{0.5cm}\#100 b = 1;\\
+\hspace*{0.5cm}\#175 b = 0;\\
+\hspace*{0.5cm}\#75 b = 1;\\
+\hspace*{0.5cm}\#50 \$stop;\\
+end\\
+endmodule\\
+\includegraphics[width = .9\textwidth]{problem1仿真.jpg}\\
+{\bf2).问题二：}根据波形编写仿真文件如下：\\
+\`timescale 1ns / 1ps\\
+module problem2();\\
+reg CLK, RST\_N, D;\\
+initial CLK = 0;\\
+always  \#5 CLK = $\sim$ CLK;\\
+initial \\
+begin\\
+\hspace*{0.5cm}RST\_N = 0;\\
+\hspace*{0.5cm}\#27.5 RST\_N = 1;\\
+end\\
+initial\\
+begin\\
+\hspace*{0.5cm}D = 0;\\
+\hspace*{0.5cm}\#12.5 D = 1;\\
+\hspace*{0.5cm}\#25 D = 0;\\
+\hspace*{0.5cm}\#17.5 \$stop;\\
+end\\
+endmodule\\
+生成如下：\\
+\includegraphics[width = .9\textwidth]{problem2.jpg}\\
+{\bf3).问题三：}根据问题二的波形作为输入，编写代码如下：(设置了D的波形在12.5以及37.5变化，RST\_N在27.5处变化)\\
+\`timescale 1ns / 1ps\\
+module problem3(\\
+input clk, rst\_n, d,\\
+output reg q\\
+\hspace*{0.5cm});\\
+always@(posedge clk)\\
+begin\\
+\hspace*{0.5cm}if(rst\_n == 0)\\
+\hspace*{1cm}q <=  1'b0;\\
+\hspace*{0.5cm}else \\
+\hspace*{1cm}q <= d;\\
+end\\
+endmodule\\
+仿真测试文件如下：\\
+\`timescale 1ns / 1ps\\
+module test\_bench();\\
+reg clk, rst\_n, d;\\
+wire q;\\
+problem3 problem3(.clk(clk), .rst\_n(rst\_n), .d(d), .q(q));\\
+initial clk = 0;\\
+always \#5 clk = $\sim$ clk;\\
+initial\\
+begin\\
+\hspace*{0.5cm}rst\_n = 0;\\
+\hspace*{0.5cm}\#27.5 rst\_n = 1; \\
+end\\
+initial\\
+begin\\
+\hspace*{0.5cm}d = 0;\\
+\hspace*{0.5cm}\#12.5 d = 1;\\
+\hspace*{0.5cm}\#25 d = 0;\\
+\hspace*{0.5cm}\#17.5 \$finish;\\
+end\\
+endmodule\\
+仿真波形如下：\\
+\includegraphics[width = .9\textwidth]{problem3.jpg}\\
+{\bf4).问题四：}3-8译码器代码如下：\\
+module problem4(\\
+\hspace*{0.5cm}input [2:0] A,\\
+\hspace*{0.5cm}input E,\\
+\hspace*{0.5cm}output reg [7:0] Y\\
+);\\
+integer k;\\
+always@(*)\\
+\hspace*{0.5cm}for(k = 0; k <= 7; k = k + 1)\\
+\hspace*{0.5cm}begin\\
+\hspace*{1cm}if((E == 1) \&\& (A == k))\\
+\hspace*{1.5cm}Y[k] = 1;\\
+\hspace*{1cm}else\\
+\hspace*{1.5cm}Y[k] = 0;\\
+\hspace*{0.5cm}end\\
+endmodule\\
+仿真测试文件如下：(其中对于使能端设置了在5,15,25时的电平翻转，测试使能端作用，A端口每隔10个时间单位变化一次)\\
+\`timescale 1ns / 1ps\\
+module test\_bench();\\
+reg [2:0] A;\\
+reg E;\\
+wire [7:0]  Y;\\
+problem4 problem4(.A(A), .E(E), .Y(Y));\\
+initial\\
+begin\\
+\hspace*{0.5cm}E = 0;\\
+\hspace*{0.5cm}\#5 E = 1;\\
+\hspace*{0.5cm}\#10 E = 0;\\
+\hspace*{0.5cm}\#10 E = 1;\\
+end\\
+initial\\
+begin\\
+\hspace*{0.5cm}A[  2 ]  = 0; A [  1 ] = 0; A[  0]  = 0; \\
+\hspace*{0.5cm}\#10  A[  2 ] = 0; A[  1 ] = 0; A [  0 ]  = 1; \\
+\hspace*{0.5cm}\#10  A [  2 ] = 0; A [  1 ] = 1; A [  0 ]  = 0; \\
+\hspace*{0.5cm}\#10  A [  2 ]= 0; A  [  1] = 1; A [  0]  = 1; \\
+\hspace*{0.5cm}\#10  A [  2 ]= 1; A [  1 ]  = 0; A [  0 ]  = 0; \\
+\hspace*{0.5cm}\#10  A[  2 ]= 1; A[  1 ]  = 0; A [  0 ]  = 1; \\
+\hspace*{0.5cm}\#10  A [  2 ]= 1; A[  1 ]  = 1; A [  0 ]  = 0; \\
+\hspace*{0.5cm}\#10  A [  2 ]= 1; A [  1 ]  = 1; A [  0]  = 1; \\
+\hspace*{0.5cm}\#10 \$finish;\\
+end\\
+endmodule\\
+\includegraphics[width = .9\textwidth]{problem4.jpg}\\
+{\bf5.总结与思考：}\\
+{\bf1).收获：}本次实验对于Vivado软件的使用了有了更为深入的了解，学会了仿真文件的编写与测试，以及对波形文件的分析；\\
+{\bf2).评价：}实验作为Vivado软件使用的基本内容以及对仿真文件的介绍，其内容相对而言不是较难，设置合理；\\
+{\bf3).建议：}实验内容设置合理，无较大建议；
+\end{document}
+
