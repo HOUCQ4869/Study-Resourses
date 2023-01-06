@@ -1,0 +1,146 @@
+\documentclass[12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{papersize={21cm,29.7cm}}
+\geometry{left=2cm,right=2cm,top=3cm,bottom=2cm}
+\pagestyle{fancy}
+\lhead{姓名：侯超群}
+\chead{\today}
+\rhead{学号:PB21111618}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headwidth}{\textwidth}
+\renewcommand{\footrulewidth}{0pt}
+\begin{document}
+\section*{实验报告}
+\noindent{\bf1.Report name:}Lab04\\
+{\bf2.Purpose:}\\
+实验共有两个部分:1)对于16个学生的分数的数组进行排序;2)统计学生中获得A与B的
+人数;\\
+a.其中学生的分数储存在x4000开始的16个地址中,要求将排序后的结果存储在x5000开始的地址中\\
+b.对于学生分数达到85分及以上,并且排名前25\%,则被评为A;对于没有获得A的学生,但分数在75及以上,并且排名前50\%,则被评为B;
+要求将达到A,B的人数分别储存在x5100和x5101中;\\
+{\bf3.Principles:}\\
+1)采取选择排序,构成两个循环的嵌套,分别取R0,R1作为两个指针,在R0从前向后历遍时,R1从R0+1处开始向后查找;\\
+2)选择其余中最小的值,记录该地址R6与最小值R2,R1结束一次遍历后执行写入;R7指向写入地址,将R2写入,并将R0指向的值交换到R6对应的最小值处,便于后续比较;\\
+3)当比较结束时,此时x5000到x500F已经储存从小到大的分数,从后向前开始计算获得A,B的人数;\\
+4)首先循环四次,找到满足A的人数,对于不满足A的分数判断是否满足B;结束后再次循环四次,计算满足B的人数,分别存储在R7,R6中;\\
+{\bf4.Procedure:}\\
+\hspace*{1.5cm}.ORIG x3000\\
+\hspace*{1.5cm}LD R0, DATA\\
+\hspace*{1.5cm}LD R7, DATAWR\\
+\hspace*{1.5cm}ADD R0, R0, \#-1\\
+\hspace*{1.5cm};选择排序\\
+CHOOSE  ADD R0, R0, \#1\\
+\hspace*{1.5cm}LD R3, DATAOVER\\
+\hspace*{1.5cm}NOT R4, R3\\
+\hspace*{1.5cm}ADD R4, R4, \#1\\
+\hspace*{1.5cm}ADD R5, R0, R4\\
+\hspace*{1.5cm}BRzp NEW\\
+\hspace*{1.5cm};与R3比较判断是否选择结束\\
+\hspace*{1.5cm}ADD R1, R0, \#0\\
+\hspace*{1.5cm}LDR R2, R0, \#0\\
+\hspace*{1.5cm};选择该轮循环需要比较的值\\
+\hspace*{1.5cm}ADD R6, R0, \#0\\
+\hspace*{1.5cm};初始化最小值地址\\
+\\
+AGAIN   ADD R1, R1, \#1\\
+\hspace*{1.5cm}LD R3, DATAOVER\\
+\hspace*{1.5cm}NOT R4, R3\\
+\hspace*{1.5cm}ADD R4, R4, \#1\\
+\hspace*{1.5cm}ADD R5, R1, R4\\
+\hspace*{1.5cm}BRzp WRITED\\
+\hspace*{1.5cm};与R3比较判断是否结束该次循环\\
+\hspace*{1.5cm}LDR R3, R1, \#0\\
+\\
+COMPARE NOT R4, R2\\
+\hspace*{1.5cm}ADD R4, R4, \#1\\
+\hspace*{1.5cm}ADD R5, R3, R4\\
+\hspace*{1.5cm};比较R2, R3\\
+\hspace*{1.5cm}BRzp AGAIN\\
+\hspace*{1.5cm}ADD R2, R3, \#0\\
+\hspace*{1.5cm};若R3小于最小值R2,更新最小值\\
+\hspace*{1.5cm}ADD R6, R1, \#0\\
+\hspace*{1.5cm};记录最小值地址，以便交换\\
+\hspace*{1.5cm}BRnzp AGAIN\\
+\\
+WRITED  STR R2, R7, \#0\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+\hspace*{1.5cm};存储地址的指针向后偏移一位\\
+\hspace*{1.5cm}LDR R2, R0, \#0\\
+\hspace*{1.5cm}STR R2, R6, \#0\\
+\hspace*{1.5cm};把R0指向的值交换到最小值处,以便后续比较\\
+\hspace*{1.5cm}BRnzp CHOOSE\\
+\\
+\hspace*{1.5cm};开始计算获得A,B的人数\\
+NEW LD R0, DATAWROVER\\
+\hspace*{1.5cm}AND R7, R7, \#0\\
+\hspace*{1.5cm}AND R6, R6, \#0\\
+\hspace*{1.5cm}ADD R2, R7, \#15\\
+\hspace*{1.5cm}ADD R2, R2, \#15\\
+\hspace*{1.5cm}ADD R2, R2, \#15\\
+\hspace*{1.5cm}ADD R2, R2, \#15\\
+\hspace*{1.5cm}ADD R2, R2, \#15\\
+\hspace*{1.5cm}ADD R2, R2, \#10\\
+\hspace*{1.5cm};R2=85\\
+\hspace*{1.5cm}NOT R2, R2\\
+\hspace*{1.5cm}ADD R2, R2, \#1\\
+\hspace*{1.5cm}ADD R3, R7, \#15\\
+\hspace*{1.5cm}ADD R3, R3, \#15\\
+\hspace*{1.5cm}ADD R3, R3, \#15\\
+\hspace*{1.5cm}ADD R3, R3, \#15\\
+\hspace*{1.5cm}ADD R3, R3, \#15\\
+\hspace*{1.5cm};R3=75\\
+\hspace*{1.5cm}NOT R3, R3\\
+\hspace*{1.5cm}ADD R3, R3, \#1\\
+\hspace*{1.5cm}ADD R4, R7, \#4\\
+\\
+COUNTA  LDR R1, R0, \#0\\
+\hspace*{1.5cm}ADD R4, R4, \#-1\\
+\hspace*{1.5cm}BRn COUNTB\\
+\hspace*{1.5cm}ADD R5, R1, R2\\
+\hspace*{1.5cm}BRn COUNTAB\\
+\hspace*{1.5cm}ADD R7, R7, \#1\\
+\hspace*{1.5cm};对于分数在85以上且位于前25\%\\
+\\
+COUNTAN ADD R0, R0, \#-1\\
+\hspace*{1.5cm}BRnzp COUNTA\\
+\\
+COUNTAB ADD R5, R1, R3\\
+\hspace*{1.5cm}BRn COUNTAN\\
+\hspace*{1.5cm}ADD R6, R6, \#1\\
+\hspace*{1.5cm}BRnzp COUNTAN\\
+\hspace*{1.5cm};对于分数在75以上85以下且位于前25\%\\
+\\
+COUNTB  ADD R4, R4, \#5\\
+COUNTT  LDR R1, R0, \#0\\
+\hspace*{1.5cm}ADD R4, R4, \#-1\\
+\hspace*{1.5cm}BRn OVER\\
+\hspace*{1.5cm}ADD R5, R1, R3\\
+\hspace*{1.5cm}BRn COUNTBN\\
+\hspace*{1.5cm}ADD R6, R6, \#1\\
+\hspace*{1.5cm};对于分数在75以上位于前25~50\%\\
+\\
+COUNTBN ADD R0, R0, \#-1\\
+\hspace*{1.5cm}BRnzp COUNTT\\
+\\
+OVER    STI R7, NUMA\\
+\hspace*{1.5cm}STI R6, NUMB\\
+\hspace*{1.5cm}HALT\\
+\\
+\hspace*{1.5cm}DATA .FILL x4000\\
+\hspace*{1.5cm}DATAOVER .FILL x4010\\
+\hspace*{1.5cm}DATAWR .FILL x5000\\
+\hspace*{1.5cm}DATAWROVER  .FILL x500F\\
+\hspace*{1.5cm}NUMA    .FILL x5100\\
+\hspace*{1.5cm}NUMB    .FILL x5101\\
+\hspace*{1.5cm}.END\\
+{\bf5.Result of test:}\\
+根据自测网站，评测结果如下：\\
+\includegraphics[width = .9\textwidth]{评测.jpg}\\
+\end{document}
+
