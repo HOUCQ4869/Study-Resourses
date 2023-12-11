@@ -1,2 +1,2 @@
 # README
-USTC学习资料记录
+USTC study materials
